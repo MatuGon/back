@@ -1,6 +1,6 @@
 generator client {
-  provider     = "prisma-client"
-  output       = "../generated/prisma"
+  provider = "prisma-client"
+  output   = "../generated/prisma"
   moduleFormat = "cjs"
 }
 
@@ -9,17 +9,16 @@ datasource db {
 }
 
 enum Role {
-  USER
   ADMIN
+  USER
 }
 
 model User {
-
-  id       Int    @id @default(autoincrement())
-  fullname String @db.VarChar(255)
-  email    String @unique @db.VarChar(255)
+  id Int @id @default(autoincrement())
+  fullName String @db.VarChar(255)
+  email String @unique @db.VarChar(255)
   password String @db.Text()
-  role     Role   @default(USER)
+  role Role @default(USER)
 
   createdAt DateTime @default(now()) @db.Timestamptz(3)
   updatedAt DateTime @updatedAt @db.Timestamptz(3)
@@ -27,4 +26,15 @@ model User {
   @@index([id])
   @@index([email])
   @@map("users")
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(255)
+
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime @updatedAt @db.Timestamptz(3)
+
+  @@index([id])
+  @@map("categories")
 }
