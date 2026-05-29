@@ -21,6 +21,7 @@ export class SuppliersService {
   
         return await this.prismaService.supplier.create({
           data: createSupplierDto
+          
         })
       } catch (error) {
         console.log(error);
