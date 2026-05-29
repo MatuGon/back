@@ -29,17 +29,20 @@ export class ProductsService {
     }
   
     async findAll() {
-      try {
-        return await this.prismaService.product.findMany({
-          orderBy: {
-            name: 'asc',
-          }
-        });
-      } catch (error) {
-        console.log(error);
-        throw error;
-      }
-    }
+  try {
+    return await this.prismaService.product.findMany({
+      include: {
+        category: true,
+      },
+      orderBy: {
+        name: 'asc',
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
+}
   
     async findOne(id: number) {
       try {
