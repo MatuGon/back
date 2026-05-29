@@ -31,11 +31,7 @@ export class CategoriesService {
   
     async findAll() {
       try {
-        return await this.prismaService.category.findMany({
-          orderBy: {
-            name: 'asc',
-          }
-        });
+        return await this.prismaService.category.findMany({orderBy: {name: 'asc',}});
       } catch (error) {
         console.log(error);
         throw error;

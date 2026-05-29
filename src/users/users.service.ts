@@ -32,7 +32,7 @@ export class UsersService {
 
   async findAll() {
     try {
-      return await this.prismaService.user.findMany();
+      return await this.prismaService.user.findMany({orderBy: {fullName: 'asc',}});
     } catch (error) {
       console.log(error);
       throw error;
