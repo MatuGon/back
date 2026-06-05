@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateMovementDto } from './dto/create-movement.dto';
 import { UpdateMovementDto } from './dto/update-movement.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -9,19 +9,27 @@ export class MovementsService {
 
   async create(createMovementDto: CreateMovementDto) {
     try {
-      // Validar movimiento
-      const existingMovement = await this.prismaService.movement.findFirst({
+
+      // Validar si hay stock suficiente
+      const product = await this.prismaService.product.findUnique({
         where: {
-          name: createMovementDto.name,
+          id: createMovementDto.productId,
         }
       });
 
-      if (existingMovement) {
-        throw new ConflictException('El movimiento con ese nombre ya está en uso');
+      if (!product) {
+        throw new NotFoundException('Producto no encontrado');
+      }
+
+      if (product.stock < createMovementDto.amount) {
+        throw new Error('No hay stock suficiente');
       }
 
       return await this.prismaService.movement.create({
-        data: createMovementDto
+        data: {
+          ...createMovementDto,
+          date: new Date(createMovementDto.date),
+        }
       })
     } catch (error) {
       console.log(error);
@@ -31,69 +39,59 @@ export class MovementsService {
 
   async findAll() {
     try {
-      return await this.prismaService.movement.findMany({ orderBy: { name: 'asc', } });
+      return await this.prismaService.movement.findMany();
     } catch (error) {
       console.log(error);
       throw error;
     }
   }
 
-  async findOne(id: number) {
-    try {
-      return await this.prismaService.movement.findUnique({
-        where: {
-          id,
-        }
-      })
-    } catch (error) {
-      console.log(error);
-      throw error;
-    }
-  }
-
-  async update(id: number, updateMovementDto: UpdateMovementDto) {
-    const movement = await this.findOne(id);
-
-    try {
-      if (!movement) {
-        throw new NotFoundException('Movimiento no encontrado');
+    async findOne(id: number) {
+      try {
+        return await this.prismaService.movement.findUnique({
+          where: {
+            id,
+          }
+        })
+      } catch (error) {
+        console.log(error);
+        throw error;
       }
-
-      // Validar movimiento
-      const existingMovement = await this.prismaService.movement.findFirst({
-        where: {
-          name: updateMovementDto.name,
+    }
+  
+    async update(id: number, updateMovementDto: UpdateMovementDto) {
+      const movement = await this.findOne(id);
+  
+      try {
+        if (!movement) {
+          throw new NotFoundException('Movimiento no encontrado');
         }
-      });
-
-      if (existingMovement && existingMovement.id !== id) {
-        throw new ConflictException('El nombre del movimiento ya está en uso');
+  
+        return await this.prismaService.movement.update({
+          where: {
+            id,
+          },
+          data: {
+            ...updateMovementDto,
+          }
+        })
+      } catch (error) {
+        console.log(error);
+        throw error;
       }
-
-      return await this.prismaService.movement.update({
-        where: {
-          id,
-        },
-        data: {
-          ...updateMovementDto,
-        }
-      })
-    } catch (error) {
-      console.log(error);
-      throw error;
     }
-  }
-
-  async remove(id: number) {
-    try {
-      return await this.prismaService.movement.delete({
-        where: {
-          id,
-        }
-      })
-    } catch (error) {
-      console.log(error);
-      throw error;
+  
+    async remove(id: number) {
+      try {
+        return await this.prismaService.movement.delete({
+          where: {
+            id,
+          }
+        })
+      } catch (error) {
+        console.log(error);
+        throw error;
+      }
     }
-  }
+
 }
